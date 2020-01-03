@@ -8,13 +8,26 @@ import android.os.Handler;
 
 public class SplashActivity extends AppCompatActivity {
 
-    Handler mHandler = new Handler();
+    private Handler mHandler = new Handler();
+    private Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        startActivity(new Intent(SplashActivity.this, MainActivity.class
-        ));
+
+        mHandler.postDelayed(mRunnable, 2000L);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mHandler.removeCallbacks(mRunnable);
+        finish();
     }
 }
