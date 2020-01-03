@@ -1,5 +1,7 @@
 package com.example.itpmapp_second;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -9,8 +11,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.View;
+import android.widget.EditText;
 
 public class EditActivity extends AppCompatActivity {
+
+    private static final String KEY_TITLE = "key_title";
+    private EditText mTitleEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +24,15 @@ public class EditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mTitleEditText = findViewById(R.id.titleEditText);
+
+        String title = getIntent().getStringExtra(KEY_TITLE);
+        if(title != null) {
+            mTitleEditText.setText(title);
+        } else {
+            mTitleEditText.setText("");
+        }
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -28,4 +43,9 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
+    public static Intent createIntent(Context context, String title) {
+        Intent intent = new Intent(context, EditActivity.class);
+        intent.putExtra(KEY_TITLE, title);
+        return intent;
+    }
 }
