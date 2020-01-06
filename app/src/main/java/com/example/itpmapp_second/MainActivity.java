@@ -58,9 +58,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 TitleDataItem item = (TitleDataItem) adapterView.getItemAtPosition(position);
-                Intent intent = EditActivity.createIntent(MainActivity.this, item.getTitle());
-//                Log.d(MainActivity.class.getSimpleName(), position + "項目目のリストアイテムが押されました");
-//                Intent intent = EditActivity.createIntent(MainActivity.this, title);
+                Intent intent = EditActivity.createIntent(MainActivity.this, item.getId(), item.getTitle());
                 startActivity(intent);
             }
         });
@@ -69,10 +67,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
                 TitleDataItem item = (TitleDataItem) adapterView.getItemAtPosition(position);
-                mAdapter.remove(item);
+
+                SQLiteDatabase db = new ITPMDatabaseOpenHelper(MainActivity.this).getWritableDatabase();
+
+                db.delete(ITPMDatabaseOpenHelper.TABLE_NAME, ITPMDatabaseOpenHelper._ID + "=" + item.getId(), null);
+
+                db.close();
 
                 Toast.makeText(MainActivity.this, item.getTitle() + "を削除しました。", Toast.LENGTH_SHORT).show();
-                return false;
+                return true;
             }
         });
 

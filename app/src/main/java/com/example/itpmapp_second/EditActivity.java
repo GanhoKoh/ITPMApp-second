@@ -10,15 +10,18 @@ import com.example.itpmapp_second.databases.ITPMDatabaseOpenHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 public class EditActivity extends AppCompatActivity {
 
+    private static final String KEY_ID  = "key_id";
     private static final String KEY_TITLE = "key_title";
     private EditText mTitleEditText;
 
@@ -31,7 +34,18 @@ public class EditActivity extends AppCompatActivity {
 
         mTitleEditText = findViewById(R.id.titleEditText);
 
+        final int selectId = getIntent().getIntExtra(KEY_ID, -1);
+
+        ActionBar actionBar = getSupportActionBar();
+
+        if(selectId == -1 && actionBar != null) {
+            actionBar.setTitle(R.string.a_new);
+        } else {
+            actionBar.setTitle(R.string.edit);
+        }
+
         String title = getIntent().getStringExtra(KEY_TITLE);
+
         if(title != null) {
             mTitleEditText.setText(title);
         } else {
@@ -49,25 +63,31 @@ public class EditActivity extends AppCompatActivity {
                     toast.show();
                 } else {
                     ContentValues contentValues = new ContentValues();
-                    contentValues.put(ITPMDatabaseOpenHelper.COLUMN_TITLE, mTitleEditText.getText().toString());
-
                     SQLiteDatabase db = new ITPMDatabaseOpenHelper(EditActivity.this).getWritableDatabase();
 
-                    db.insert(ITPMDatabaseOpenHelper.TABLE_NAME, null, contentValues);
+                    if(selectId == -1) {
+                        contentValues.put(ITPMDatabaseOpenHelper.COLUMN_TITLE, mTitleEditText.getText().toString());
+                        db.insert(ITPMDatabaseOpenHelper.TABLE_NAME, null, contentValues);
+                    } else {
+                        contentValues.put(ITPMDatabaseOpenHelper._ID, selectId);
+                        contentValues.put(ITPMDatabaseOpenHelper.COLUMN_TITLE, mTitleEditText.getText().toString());
+                        db.update(ITPMDatabaseOpenHelper.TABLE_NAME,
+                                contentValues,
+                                ITPMDatabaseOpenHelper._ID + "=" + selectId,
+                                null);
 
+                    }
                     db.close();
-
                     finish();
                 }
             }
         });
 
-
-
     }
 
-    public static Intent createIntent(Context context, String title) {
+    public static Intent createIntent(Context context, int id, String title) {
         Intent intent = new Intent(context, EditActivity.class);
+        intent.putExtra(KEY_ID, id);
         intent.putExtra(KEY_TITLE, title);
         return intent;
     }
