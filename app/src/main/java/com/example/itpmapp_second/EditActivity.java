@@ -1,9 +1,12 @@
 package com.example.itpmapp_second;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
+import com.example.itpmapp_second.databases.ITPMDatabaseOpenHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -12,6 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class EditActivity extends AppCompatActivity {
 
@@ -37,10 +41,29 @@ public class EditActivity extends AppCompatActivity {
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                finish();
+            public void onClick(View v) {
+                String title = mTitleEditText.getText().toString();
+                if(title.isEmpty()) {
+                    Toast toast = Toast.makeText(EditActivity.this,
+                            getString(R.string.error_no_title), Toast.LENGTH_SHORT);
+                    toast.show();
+                } else {
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(ITPMDatabaseOpenHelper.COLUMN_TITLE, mTitleEditText.getText().toString());
+
+                    SQLiteDatabase db = new ITPMDatabaseOpenHelper(EditActivity.this).getWritableDatabase();
+
+                    db.insert(ITPMDatabaseOpenHelper.TABLE_NAME, null, contentValues);
+
+                    db.close();
+
+                    finish();
+                }
             }
         });
+
+
+
     }
 
     public static Intent createIntent(Context context, String title) {

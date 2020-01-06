@@ -2,8 +2,12 @@ package com.example.itpmapp_second;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 
+import com.example.itpmapp_second.databases.ITPMDatabaseOpenHelper;
 import com.example.itpmapp_second.pojo.TitleDataItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -91,18 +95,33 @@ public class MainActivity extends AppCompatActivity {
     private void displayDataList() {
         mAdapter.clear();
 
-//        List<String> dataList = Arrays.asList("ホーム","事業内容","企業情報","採用情報","お問い合わせ");
-        List<TitleDataItem> dataList = Arrays.asList(
-                new TitleDataItem(1, "ホーム"),
-                new TitleDataItem(2, "事業内容"),
-                new TitleDataItem(3, "企業情報"),
-                new TitleDataItem(4, "採用情報"),
-                new TitleDataItem(5, "お問い合わせ")
+        List<TitleDataItem> itemList = new ArrayList<>();
+
+        SQLiteDatabase db = new ITPMDatabaseOpenHelper(this).getWritableDatabase();
+
+        Cursor cursor = db.query(
+                ITPMDatabaseOpenHelper.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
         );
 
-        mAdapter.addAll(dataList);
+        while (cursor.moveToNext()) {
+            int id = cursor.getInt(cursor.getColumnIndex(ITPMDatabaseOpenHelper._ID));
+            String title = cursor.getString(cursor.getColumnIndex(ITPMDatabaseOpenHelper.COLUMN_TITLE));
+            itemList.add(new TitleDataItem(id, title));
+        }
 
-        mAdapter.notifyDataSetChanged();
+        cursor.close();
+
+        db.close();
+
+        mAdapter.addAll(itemList);
+
+        mAdapter.notifyDataSetInvalidated();
     }
 
     private class MainListAdapter extends ArrayAdapter<TitleDataItem> {
