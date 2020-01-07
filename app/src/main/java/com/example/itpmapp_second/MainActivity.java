@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.example.itpmapp_second.databases.ITPMDatabaseOpenHelper;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
                 db.close();
 
+                new AllDataLoadTask().execute();
                 Toast.makeText(MainActivity.this, item.getTitle() + "を削除しました。", Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -92,39 +94,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        displayDataList();
+        new AllDataLoadTask().execute();
     }
 
-    private void displayDataList() {
+    private void displayDataList(List<TitleDataItem> titleDataItems) {
         mAdapter.clear();
 
-        List<TitleDataItem> itemList = new ArrayList<>();
+        mAdapter.addAll(titleDataItems);
 
-        SQLiteDatabase db = new ITPMDatabaseOpenHelper(this).getWritableDatabase();
-
-        Cursor cursor = db.query(
-                ITPMDatabaseOpenHelper.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-
-        while (cursor.moveToNext()) {
-            int id = cursor.getInt(cursor.getColumnIndex(ITPMDatabaseOpenHelper._ID));
-            String title = cursor.getString(cursor.getColumnIndex(ITPMDatabaseOpenHelper.COLUMN_TITLE));
-            itemList.add(new TitleDataItem(id, title));
-        }
-
-        cursor.close();
-
-        db.close();
-
-        mAdapter.addAll(itemList);
-
-        mAdapter.notifyDataSetInvalidated();
+        mAdapter.notifyDataSetChanged();
     }
 
     private class MainListAdapter extends ArrayAdapter<TitleDataItem> {
@@ -166,6 +144,44 @@ public class MainActivity extends AppCompatActivity {
             titleTextView.setText((item.getTitle()));
 
             return convertView;
+        }
+    }
+
+    private class AllDataLoadTask extends AsyncTask<Void, Void, List<TitleDataItem>> {
+
+        @Override
+        protected List<TitleDataItem> doInBackground(Void... voids) {
+
+            List<TitleDataItem> itemList = new ArrayList<>();
+
+            SQLiteDatabase db = new ITPMDatabaseOpenHelper(MainActivity.this).getWritableDatabase();
+
+            Cursor cursor = db.query(
+                    ITPMDatabaseOpenHelper.TABLE_NAME,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            while (cursor.moveToNext()) {
+                int id = cursor.getInt(cursor.getColumnIndex(ITPMDatabaseOpenHelper._ID));
+                String title = cursor.getString(cursor.getColumnIndex(ITPMDatabaseOpenHelper.COLUMN_TITLE));
+                itemList.add(new TitleDataItem(id, title));
+            }
+
+            cursor.close();
+
+            db.close();
+
+            return itemList;
+        }
+
+        @Override
+        protected void onPostExecute(List<TitleDataItem> titleDataItems) {
+            displayDataList(titleDataItems);
         }
     }
 
